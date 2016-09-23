@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+# SpaceGameThing project originally developed for CSE 2102
+# Copyright 2016: Will Baumbach and Jeffrey Santi
+# 
+# TemplateFile:
+#	Defines the general structure a file in this repo should follow.
+
+
+require 'pathItem1'
+require 'pathItem2'
+require_relative 'localItem1'
+require_relative 'localItem2'
+
+
+# Defines a redis object representing MyClass
+class MyClass < BaseClass
+	
+	# Member Variables
+	# @id : Database id
+	# @valid : Validity flag
+
+	# Permentantly sets class members to asociate with a redis key
+	def initialize(a, b)
+		@id = a
+		@valid = b
+	end
+
+	# returns an array of jobs associated with this object
+	def jobs
+		# ...
+	end
+	
+	
+end
+
