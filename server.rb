@@ -12,11 +12,17 @@ require_relative 'world'
 # Global reference to the database
 $db = Redis.new(:host => "localhost", :port => 6379, :db => 0)
 
+# Clear all state information
+$db.scan_each(match: 'sgt-*') do |keyname|
+	$db.del(keyname)
+end
+
+
 # Main method called when server daemon begins
 def main
-	w = World.new($db, 'world/0')
+	w = newWorld($db, 'main')
 	
-	w.generateSector('sector/1', 0, 0)
+	w.getSector(0, 0)
 	puts w.sectors
 end
 

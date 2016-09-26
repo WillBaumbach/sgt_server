@@ -8,17 +8,13 @@
 
 require_relative 'redisobject'
 require_relative 'world'
+require_relative 'solarsystem'
 
 
 # Fixed size piece of the world container 
 class Sector < RedisObject
 	
 	# Member Variables
-	
-	# returns whether this sector was already generated
-	def exists?
-		@db.exists('sgt-sector:' + @id)
-	end
 	
 	# returns the x index of this sector (0 is center)
 	def offsetX
@@ -35,17 +31,44 @@ class Sector < RedisObject
 		wid = @db.hget('sgt-sector:' + @id, 'world')
 		World.new(@db, wid)
 	end
-
-	# generates a random new sector at index x,y
-	def generate(world, x, y)
-		return if exists?
 	
-		@db.hset('sgt-sector:' + @id, 'world', world.id)
-		@db.hset('sgt-sector:' + @id, 'offsetx', x)
-		@db.hset('sgt-sector:' + @id, 'offsety', y)
+	# returns a list of all solar systems in this sector
+	def solarsystems
+		ret = []
+		@db.hgetall('sgt-sector:' + @id + ':systems').each do |coords, sid|
+			ret.push(SolarSystem.new(@db, sid))
+		end
+		ret
+	end
+	
+	# generates a new solar system part of this sector
+	def generateNewSolarSystem(x, y)
+		system = newSolarSystem(@db, self, x, y)
+		key = x.to_s+','+y.to_s
+		@db.hset('sgt-sector:'+@id+':systems', key, system.id)
+		
+		system.generate
+	end
+
+	# generates a random new sector
+	def generate()
+		
+		generateNewSolarSystem(500, 500)
 		
 		# TODO: Lots
 	end
 	
+end
+
+
+# generates a new sector object at a given index in a given world
+def newSector(db, world, x, y)
+	newId = newUUID(db)
+	@db.hset('sgt-sector:' + newId, 'world', world.id)
+	@db.hset('sgt-sector:' + newId, 'offsetx', x)
+	@db.hset('sgt-sector:' + newId, 'offsety', y)
+	
+	sector = Sector.new(db, newId)
+	sector
 end
 
