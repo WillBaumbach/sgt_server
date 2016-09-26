@@ -17,3 +17,7 @@ class CelestialBody < RedisObject
 	
 	
 end
+
+
+
+#Test
