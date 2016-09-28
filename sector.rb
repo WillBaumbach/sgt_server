@@ -72,3 +72,6 @@ def newSector(db, world, x, y)
 	sector
 end
 
+
+#Test
+
