@@ -11,6 +11,52 @@ require_relative 'world'
 require_relative 'solarsystem'
 
 
+class AstroLocation
+	
+	# Member Variables
+	# @sector : Sector Reference
+	# @x : X offset
+	# @y : Y offset
+	
+	# creates by parsing string
+	# Format: 'a:sec#:x,y'
+	def initialize(db, s)
+		args = s.split(':')
+		xyargs = args[2].split(',')
+		@sector = Sector.new(db, args[1])
+		@x = xyargs[0].to_i
+		@y = xyargs[1].to_i
+	end
+	
+	# creates by specifying params
+	def initialize(sector, x, y)
+		@sector = sector
+		@x = x
+		@y = y
+	end
+	
+	# returns sector ref
+	def sector
+		@sector
+	end
+	
+	# returns x coord
+	def x
+		@x
+	end
+	
+	# returns y coord
+	def y
+		@y
+	end
+	
+	def to_s
+		'a:' + @sector.id + ':' + x + ',' + y
+	end
+	
+end
+
+
 # Fixed size piece of the world container 
 class Sector < RedisObject
 	
