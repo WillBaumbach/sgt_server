@@ -52,8 +52,14 @@ class SolarSystem < RedisObject
 	# generates a random new solar system
 	def generate()
 		
+		# first generate at least one star
 		
-		# TODO: Lots
+		# possibly another star
+		
+		# for each planet:
+		# newCelestialBody(..., 'planet')
+		# celestialbody.generate
+		
 	end
 	
 end

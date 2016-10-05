@@ -16,4 +16,17 @@ class CelestialBody < RedisObject
 	# Member Variables
 	
 	
+	# Generates new (absract)
+	def generate()
+	
+	end
+	
+end
+
+# class Planet : CelestialBody
+
+
+def newCelestialBody(db, solarsystem, x, y, type)
+
+# return Planet.new(db, id) or Star
 end
