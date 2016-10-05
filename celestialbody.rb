@@ -65,6 +65,7 @@ def getCelestialBody(db, cbid)
 end
 
 
+# Creates a new celestial body of given type at position
 def newCelestialBody(db, solarsystem, x, y, type)
 	newId = newUUID(db)
 	@db.hset('sgt-cbody:' + newId, 'type', type)
