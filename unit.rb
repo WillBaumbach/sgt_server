@@ -22,6 +22,7 @@ class UnitLocation
 		if s == nil || s == ''
 			return 'a:0:0,0'
 		end
+		return s
 	end
 	
 	# internal representation

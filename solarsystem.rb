@@ -35,7 +35,7 @@ class SolarSystem < RedisObject
 	def distantCelestialBodies
 		ret = []
 		@db.hgetall('sgt-system:' + @id + ':distantbodies').each do |coords, bid|
-			ret.push(CelestialBody.new(@db, bid))
+			ret.push(getCelestialBody(@db, bid))
 		end
 		ret
 	end
@@ -44,7 +44,7 @@ class SolarSystem < RedisObject
 	def celestialBodies
 		ret = []
 		@db.hgetall('sgt-system:' + @id + ':bodies').each do |coords, bid|
-			ret.push(CelestialBody.new(@db, bid))
+			ret.push(getCelestialBody(@db, bid))
 		end
 		ret
 	end
