@@ -62,6 +62,9 @@ class Sector < RedisObject
 	
 	# Member Variables
 	
+	# Constants
+	MinSystemDistance = 5 * SolarSystem::SolarSystemRadius
+	
 	# returns the x index of this sector (0 is center)
 	def offsetX
 		@db.hget('sgt-sector:' + @id, 'offsetx').to_i
@@ -98,8 +101,33 @@ class Sector < RedisObject
 
 	# generates a random new sector
 	def generate()
-		
-		generateNewSolarSystem(500, 500)
+		numSystems = Random.rand(20...30)
+		numSystems.times do
+			# repeat until successful
+			loop do
+				# A sector ranges from -5e15 -> 5e15 on both xy axis
+				xcenter = Random.rand(-5e15...5e15)
+				ycenter = Random.rand(-5e15...5e15)
+				
+				# make sure it's far enough from every other system
+				othersystems = solarsystems
+				ok = false
+				if othersystems.empty?
+					ok = true
+				end
+				othersystems.each do |othersystem|
+					dist = Math.sqrt((xcenter - othersystem.centerX)**2 + (xcenter - othersystem.centerY)**2)
+					if dist > MinSystemDistance
+						ok = true
+						break
+					end
+				end
+				if ok
+					generateNewSolarSystem(xcenter, ycenter)
+					break
+				end
+			end
+		end
 		
 		# TODO: Lots
 	end

@@ -10,7 +10,7 @@ require 'redis'
 require_relative 'world'
 
 # Global reference to the database
-$db = Redis.new(:host => "localhost", :port => 6379, :db => 0)
+$db = Redis.new(:host => "sgt.jeffreysanti.net", :port => 6379, :db => 0)
 
 # Clear all state information
 $db.scan_each(match: 'sgt-*') do |keyname|

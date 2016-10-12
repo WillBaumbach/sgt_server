@@ -15,6 +15,10 @@ class SolarSystem < RedisObject
 	
 	# Member Variables
 	
+	# Constants
+	SolarSystemRadius = 0.5e13
+	ProbabilitySecondStar = 0.2
+	
 	# returns the center x offset
 	def centerX
 		@db.hget('sgt-system:' + @id, 'centerx').to_i
@@ -49,12 +53,59 @@ class SolarSystem < RedisObject
 		ret
 	end
 
+	# generates a new solar system part of this sector
+	def generateNewCelestialBody(x, y, type)
+		cb = newCelestialBody(@db, self, x, y, type)
+		key = cb.x.to_s+','+cb.y.to_s
+		
+		# Is it seen from a distance?
+		if type == 'star'
+			@db.hset('sgt-system:'+@id+':distantbodies', key, cb.id)
+		else
+			@db.hset('sgt-system:'+@id+':bodies', key, cb.id)
+		end
+
+		cb.generate
+	end
+
+	# returns a position far enough from all other celestial bodies
+	def randomDistantPosition(pos)
+		loop do
+			pos = randomLocation(centerX, centerY)
+			
+			# make sure it's far enough from every other system
+			othersystems = solarsystems
+			ok = false
+			if othersystems.empty?
+				ok = true
+			end
+			othersystems.each do |othersystem|
+				dist = Math.sqrt((xcenter - othersystem.centerX)**2 + (xcenter - othersystem.centerY)**2)
+				if dist > MinSystemDistance
+					ok = true
+					break
+				end
+			end
+			if ok
+				generateNewSolarSystem(xcenter, ycenter)
+				break
+			end
+		end
+	end
+
 	# generates a random new solar system
 	def generate()
-		
 		# first generate at least one star
 		
+		cx = centerX
+		cy = centerY
+		starPos = randomLocation(cx, cy, SolarSystemRadius)
+		# TODO : Add celestial body
+		
 		# possibly another star
+		if rand < ProbabilitySecondStar
+			starPos2 = randomDistantPosition
+		end
 		
 		# for each planet:
 		# newCelestialBody(..., 'planet')
