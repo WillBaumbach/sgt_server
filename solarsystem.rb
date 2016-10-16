@@ -8,6 +8,7 @@
 
 require_relative 'redisobject'
 require_relative 'sector'
+require_relative 'celestialbody'
 
 
 # Fixed size piece of the world container 
@@ -18,6 +19,9 @@ class SolarSystem < RedisObject
 	# Constants
 	SolarSystemRadius = 0.5e13
 	ProbabilitySecondStar = 0.2
+	MinBodyDist = 1e11
+	MedianNumPlanets = 5
+	NumPlanetsVariation = 2
 	
 	# returns the center x offset
 	def centerX
@@ -45,12 +49,16 @@ class SolarSystem < RedisObject
 	end
 	
 	# list of all celestial bodies in solar system
-	def celestialBodies
+	def localCelestialBodies
 		ret = []
 		@db.hgetall('sgt-system:' + @id + ':bodies').each do |coords, bid|
 			ret.push(getCelestialBody(@db, bid))
 		end
 		ret
+	end
+	
+	def celestialBodies
+		distantCelestialBodies + localCelestialBodies
 	end
 
 	# generates a new solar system part of this sector
@@ -66,29 +74,32 @@ class SolarSystem < RedisObject
 		end
 
 		cb.generate
+		cb
 	end
 
 	# returns a position far enough from all other celestial bodies
-	def randomDistantPosition(pos)
+	def randomDistantPosition()
+		cx = centerX
+		cy = centerY
+		# make sure it's far enough from every other system
+		otherbodies = celestialBodies
+		
 		loop do
-			pos = randomLocation(centerX, centerY)
+			pos = randomLocation(cx, cy, SolarSystemRadius)
 			
-			# make sure it's far enough from every other system
-			othersystems = solarsystems
-			ok = false
-			if othersystems.empty?
-				ok = true
+			ok = true
+			if otherbodies.empty?
+				return pos
 			end
-			othersystems.each do |othersystem|
-				dist = Math.sqrt((xcenter - othersystem.centerX)**2 + (xcenter - othersystem.centerY)**2)
-				if dist > MinSystemDistance
-					ok = true
+			otherbodies.each do |cb|
+				dist = Math.sqrt((pos[0] - cb.x)**2 + (pos[1] - cb.y)**2)
+				if dist < MinBodyDist
+					ok = false
 					break
 				end
 			end
 			if ok
-				generateNewSolarSystem(xcenter, ycenter)
-				break
+				return pos
 			end
 		end
 	end
@@ -100,19 +111,20 @@ class SolarSystem < RedisObject
 		cx = centerX
 		cy = centerY
 		starPos = randomLocation(cx, cy, SolarSystemRadius)
-		# TODO : Add celestial body
+		star = generateNewCelestialBody(starPos[0], starPos[1], 'star')
 		
 		# possibly another star
 		if rand < ProbabilitySecondStar
 			starPos2 = randomDistantPosition
+			star2 = generateNewCelestialBody(starPos2[0], starPos2[1], 'star')
 		end
 		
-		# for each planet:
-		# newCelestialBody(..., 'planet')
-		# celestialbody.generate
-		
+		numPlanets = Random.rand(MedianNumPlanets-NumPlanetsVariation...MedianNumPlanets+NumPlanetsVariation)
+		numPlanets.times do
+			planetPos = randomDistantPosition
+			planet = generateNewCelestialBody(planetPos[0], planetPos[1], 'planet')
+		end
 	end
-	
 end
 
 

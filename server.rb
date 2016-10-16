@@ -20,6 +20,12 @@ end
 
 # Main method called when server daemon begins
 def main
+	#loop do
+	#	pos = randomLocation(5,5, 2)
+	#	puts 'P: ' + pos[0].to_s + ' : ' + pos[1].to_s
+	#end
+
+
 	w = newWorld($db, 'main')
 	
 	w.getSector(0, 0)

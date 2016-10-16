@@ -9,9 +9,6 @@
 require_relative 'redisobject'
 require_relative 'solarsystem'
 
-require_relative 'celestialstar'
-require_relative 'celestialplanet'
-
 
 # Fixed size piece of the world container 
 class CelestialBodyAbstract < RedisObject
@@ -27,6 +24,10 @@ class CelestialBodyAbstract < RedisObject
 	# returns y coordinate
 	def y
 		@db.hget('sgt-cbody:' + @id, 'y').to_i
+	end
+	
+	def type
+		@db.hget('sgt-cbody:' + @id, 'type')
 	end
 	
 	# returns the body radius
@@ -47,8 +48,10 @@ class CelestialBodyAbstract < RedisObject
 	
 end
 
-# class Planet : CelestialBody
 
+
+require_relative 'celestialstar'
+require_relative 'celestialplanet'
 
 # Returns the correct class of job based on the db type
 def getCelestialBody(db, cbid)

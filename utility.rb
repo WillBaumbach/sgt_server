@@ -15,8 +15,8 @@ end
 
 # Generates a random cartesian location centered around cx, cy within distance r
 def randomLocation(cx, cy, rad)
-	theta = Random.rand(0...2*Math::PI)
-	r = Random.rand(0...rad)
+	theta = Random.rand(0.0...2*Math::PI)
+	r = Random.rand(0.0...rad)
 	
 	x = cx + r*Math.cos(theta)
 	y = cy + r*Math.sin(theta)

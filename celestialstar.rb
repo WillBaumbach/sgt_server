@@ -10,7 +10,7 @@ require_relative 'celestialbody'
 
 
 # Fixed size piece of the world container 
-class CelestialStar < CelestialBody
+class CelestialStar < CelestialBodyAbstract
 	
 	# Member Variables
 	
