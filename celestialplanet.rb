@@ -7,6 +7,7 @@
 
 require_relative 'redisobject'
 require_relative 'celestialbody'
+require_relative 'inventory'
 
 
 # Fixed size piece of the world container 
@@ -60,10 +61,9 @@ class CelestialPlanet < CelestialBodyAbstract
 	ResourceGasMaxO2 = 1e5
 	
 	
-	
-	# Sets planet composition of resource to x kilograms
-	def setResource(res, amount)
-		@db.hset('sgt-cbody:' + @id + ':resources', res, amount)
+	# returns inventory associated with resources
+	def resources
+		Inventory.new(@db, 'sgt-cbody:' + @id + ':resources')
 	end
 	
 	def planetType
@@ -72,6 +72,8 @@ class CelestialPlanet < CelestialBodyAbstract
 	
 	# Generates a planet
 	def generate()
+		inv = newExtractOnlyInventory(@db, 'sgt-cbody:' + @id + ':resources')
+	
 		# determine planet type
 		type = 'gas'
 		if rand > ProbabilityGasPlanet
@@ -83,25 +85,25 @@ class CelestialPlanet < CelestialBodyAbstract
 		@db.hset('sgt-cbody:' + @id, 'planettype', type)
 		
 		if type == 'rock' || type == 'rockatmos'
-			setResource('fe', rand(ResourceRockIronMin...ResourceRockIronMax))
-			setResource('si', rand(ResourceRockSiMin...ResourceRockSiMax))
-			setResource('al', rand(0...ResourceRockMaxAl)) if rand < ResourceRockProbAl
-			setResource('cu', rand(0...ResourceRockMaxCu)) if rand < ResourceRockProbCu
-			setResource('ag', rand(0...ResourceRockMaxAg)) if rand < ResourceRockProbAg
-			setResource('pb', rand(0...ResourceRockMaxPb)) if rand < ResourceRockProbPb
+			inv.fill('fe', rand(ResourceRockIronMin...ResourceRockIronMax))
+			inv.fill('si', rand(ResourceRockSiMin...ResourceRockSiMax))
+			inv.fill('al', rand(0...ResourceRockMaxAl)) if rand < ResourceRockProbAl
+			inv.fill('cu', rand(0...ResourceRockMaxCu)) if rand < ResourceRockProbCu
+			inv.fill('ag', rand(0...ResourceRockMaxAg)) if rand < ResourceRockProbAg
+			inv.fill('pb', rand(0...ResourceRockMaxPb)) if rand < ResourceRockProbPb
 			
 			if type == 'rockatmos'
-				setResource('o2', rand(0...ResourceRAMaxO2)) if rand < ResourceRAProbO2
-				setResource('n2', rand(0...ResourceRAMaxN2)) if rand < ResourceRAProbN2
-				setResource('h2o', rand(0...ResourceRAMaxH2O)) if rand < ResourceRAProbH2O
+				inv.fill('o2', rand(0...ResourceRAMaxO2)) if rand < ResourceRAProbO2
+				inv.fill('n2', rand(0...ResourceRAMaxN2)) if rand < ResourceRAProbN2
+				inv.fill('h2o', rand(0...ResourceRAMaxH2O)) if rand < ResourceRAProbH2O
 			end
 		else
-			setResource('h', rand(ResourceGasHMin...ResourceGasHMax))
-			setResource('he', rand(ResourceGasHeMin...ResourceGasHeMax))
-			setResource('nh3', rand(0...ResourceGasMaxNH3)) if rand < ResourceGasProbNH3
-			setResource('h2o', rand(0...ResourceGasMaxH20)) if rand < ResourceGasProbH20
-			setResource('o2', rand(0...ResourceGasMaxO2)) if rand < ResourceGasProbO2
-			setResource('n2', rand(0...ResourceGasMaxN2)) if rand < ResourceGasProbN2
+			inv.fill('h', rand(ResourceGasHMin...ResourceGasHMax))
+			inv.fill('he', rand(ResourceGasHeMin...ResourceGasHeMax))
+			inv.fill('nh3', rand(0...ResourceGasMaxNH3)) if rand < ResourceGasProbNH3
+			inv.fill('h2o', rand(0...ResourceGasMaxH20)) if rand < ResourceGasProbH20
+			inv.fill('o2', rand(0...ResourceGasMaxO2)) if rand < ResourceGasProbO2
+			inv.fill('n2', rand(0...ResourceGasMaxN2)) if rand < ResourceGasProbN2
 		end
 	
 		puts 'Planet ' + x.to_s + ' ' + y.to_s

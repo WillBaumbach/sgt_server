@@ -8,6 +8,7 @@
 require_relative 'redisobject'
 require_relative 'unit'
 require_relative 'job'
+require_relative 'inventory'
 
 
 # Look at UnitLocation (Unit) Class for format
@@ -109,9 +110,9 @@ class Structure < RedisObject
 	end
 	
 	
-	#
+	# returns the inventory this structure contains
 	def inventory()
-		
+		Inventory.new(@db, 'sgt-structure:' + @id + ':inv')
 	end
 	
 	
