@@ -8,6 +8,7 @@
 require_relative 'redisobject'
 require_relative 'celestialbody'
 require_relative 'inventory'
+require_relative 'structureStorageRig'
 
 
 # Fixed size piece of the world container 
@@ -107,6 +108,8 @@ class CelestialPlanet < CelestialBodyAbstract
 		end
 	
 		puts 'Planet ' + x.to_s + ' ' + y.to_s
+		
+		storageRig = newStructureStorageRig(@db, self)
 	end
 	
 end

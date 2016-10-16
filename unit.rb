@@ -50,15 +50,19 @@ class UnitLocation
 		rawString.start_with? 's'
 	end
 	
-	# TODO: returns structure unit inside
+	# returns structure unit inside
 	def structure
-	
+		args = rawString.split(':')
+		sid = args[1]
+		getStructure(@db, sid)
 	end
 	
-	# TODO: sets unit location inside structure
+	# sets unit location inside structure
 	def setStructure(structure)
-		
+		setRawString('s:' + structure.id)
 	end
+	
+	
 end
 
 
@@ -102,18 +106,26 @@ class UnitAbstract < RedisObject
 end
 
 
+require_relative 'unitHuman'
+
 # Returns the correct class of unit based on the db type
 def getUnit(db, uid)
 	unit = UnitAbstract.new(db, uid)
 	type = unit.type
 	
-	#if type == 'robot'
-	#	return UnitRobot.new(db, uid)
-	#end
+	if type == 'human'
+		return UnitHuman.new(db, uid)
+	end
 	
 	unit
 end
 
+def newUnit(db, type)
+	newId = newUUID(db)
+	@db.hset('sgt-unit:' + newId, 'type', type)
+	
+	getUnit(db, newId)
+end
 
 
 

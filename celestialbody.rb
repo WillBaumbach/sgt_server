@@ -8,6 +8,7 @@
 
 require_relative 'redisobject'
 require_relative 'solarsystem'
+require_relative 'structure'
 
 
 # Fixed size piece of the world container 
@@ -44,6 +45,26 @@ class CelestialBodyAbstract < RedisObject
 	# Generates new (absract)
 	def generate()
 	
+	end
+	
+	# returns list of structures anchored to this cb
+	def anchoredStructures
+		ret = []
+		@db.smembers('sgt-cbody:' + @id + ':structures').each do |sid|
+			ret.push(getStructure(@db, sid))
+		end
+		ret
+	end
+	
+	# attaches a structure to this cb
+	def anchorStructure(struct)
+		@db.sadd('sgt-cbody:' + @id + ':structures', struct.id)
+		struct.location.setCelestialBody(self)
+	end
+	
+	# removes a structure from this cb (does not reset struct location!)
+	def detachStructure(struct)
+		@db.srem('sgt-cbody:' + @id + ':structures', struct.id)
 	end
 	
 end

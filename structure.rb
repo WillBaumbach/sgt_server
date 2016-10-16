@@ -23,7 +23,7 @@ require_relative 'inventory'
 class StructureLocation
 	
 	#Initialize Database and ID
-	def initialize 
+	def initialize(db, id)
 		@id = id
 		@db = db
 	end
@@ -82,7 +82,7 @@ end
 
 
 #DB.hget for most methods
-class Structure < RedisObject
+class StructureAbstract < RedisObject
 	
 	#Member Variables
 	#	name?
@@ -99,6 +99,10 @@ class Structure < RedisObject
 		
 	end
 	
+	# Returns the type of structure this is
+	def type()
+		@db.hget('sgt-structure:' + @id, 'type')
+	end
 	
 	# List of all the units contained by a structure
 	def units
@@ -107,6 +111,18 @@ class Structure < RedisObject
 			ret.push(getUnit(@db, uid))
 		end
 		ret
+	end
+	
+	
+	# Attaches unit to this structure
+	def stationUnit(unit)
+		@db.sadd('sgt-structure:' + @id + ':units', unit.id)
+		unit.location.setStructure(self)
+	end
+	
+	# removes a unit from this structure (does not reset unit location!)
+	def unstationUnit(unit)
+		@db.srem('sgt-structure:' + @id + ':units', unit.id)
 	end
 	
 	
@@ -122,9 +138,9 @@ class Structure < RedisObject
 	end
 	
 	
-	#
-	def location()
-		
+	# Returns the location of this structure
+	def location
+		StructureLocation.new(@db, @id)
 	end
 	
 	
@@ -136,6 +152,19 @@ class Structure < RedisObject
 	
 	
 	
+end
+
+
+# Returns the correct class of structure based on the db type
+def getStructure(db, sid)
+	struct = StructureAbstract.new(db, sid)
+	type = struct.type
+	
+	if type == 'storage'
+		return StructureStorageRig.new(db, sid)
+	end
+	
+	struct
 end
 
 
