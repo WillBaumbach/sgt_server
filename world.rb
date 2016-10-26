@@ -46,7 +46,6 @@ class World < RedisObject
 		@db.hget('sgt-world:'+@id, 'name')
 	end
 	
-	
 end
 
 # creates a new world object associated with a given name

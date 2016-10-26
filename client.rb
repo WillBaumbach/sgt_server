@@ -6,7 +6,8 @@
 
 require 'redis'
 
-require_relative 'world'
+require_relative 'player'
+require_relative 'request'
 
 
 
@@ -18,8 +19,13 @@ class Client
 	def initialize(ws, world)
 		@ws = ws
 		@world = world
+		@listeners = {}
+		@id = -1
 		
-		send 'IDENT'
+		listen('AUTH', self)
+		send('IDENT', 0, '')
+		
+		listen('VIEWGLOBAL', self)
 	end
 	
 	# Called when client disconnects
@@ -27,21 +33,66 @@ class Client
 		puts 'Client Disconnected'
 	end
 	
-	# Sends a messgae to client
-	def send(msg)
-		puts 'SEND: ' + msg
-		@ws.send msg
+	# returns user id
+	def id
+		@id
+	end
+	
+	# Sends a message to client with given response id
+	def send(req, respid, msg)
+		toSend = req + " " + respid.to_s + " " + msg
+		puts 'SEND: ' + toSend
+		@ws.send toSend
+	end
+	
+	def listen(req, callable)
+		@listeners[req] = callable
 	end
 	
 	# Called when message recv'd from client
 	def message(msg)
-		if msg.length > 1024
-			puts 'Message too long'
+		if msg.length > 1024*64 || msg.length < 4
 			return
 		end
-		puts 'Message ' + msg
 		
+		args = msg.split(' ')
+		if args.count < 2
+			return
+		end
 		
+		reqtext = args[0]
+		respid = args[1].to_i
+		msg = ""
+		
+		if args.count > 2
+			msg = args[2..-1].join('')
+		end
+		
+		req = Request.new(self, reqtext, respid, msg)
+		if ! @listeners.include? reqtext
+			puts 'No Listener : ' + reqtext
+			return
+		end
+		
+		if @listeners[reqtext].respond_to? 'onRequest'
+			@listeners[reqtext].onRequest(req)
+		else
+			puts @listeners[reqtext].public_methods
+			puts 'No onRequest : ' + reqtext
+			return
+		end
+	end
+	
+	
+	# For handling authentication
+	def onRequest(req)
+		if req.request == 'AUTH'
+			uid = req.message
+			player = Player.new(@db, uid)
+			player.connected(self)
+		else
+			req.reply('REPLY', 'Message')
+		end
 	end
 	
 end
