@@ -16,11 +16,12 @@ class Client
 
 	# Client constructor takes db ref and websocket connection
 	# Called when new connection initiated
-	def initialize(ws, world)
+	def initialize(ws, world, db)
 		@ws = ws
 		@world = world
 		@listeners = {}
 		@id = -1
+		@db = db
 		
 		listen('AUTH', self)
 		send('IDENT', 0, '')
@@ -88,7 +89,7 @@ class Client
 	def onRequest(req)
 		if req.request == 'AUTH'
 			uid = req.message
-			player = Player.new(@db, uid)
+			player = getPlayer(@db, uid)
 			player.connected(self)
 		else
 			req.reply('REPLY', 'Message')

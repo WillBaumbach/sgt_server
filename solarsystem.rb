@@ -60,6 +60,19 @@ class SolarSystem < RedisObject
 	def celestialBodies
 		distantCelestialBodies + localCelestialBodies
 	end
+	
+	# Returns all celestial bodies which may cover the given radius
+	def celestialBodiesWithin(x, y, rad)
+		ret = []
+		celestialBodies.each do |cb|
+			dist = Math.sqrt((x - cb.x)**2 + (y - cb.y)**2)
+			puts 'cb Trying: ' + dist.to_s
+			if dist <= rad
+				ret.push cb
+			end
+		end
+		ret
+	end
 
 	# generates a new solar system part of this sector
 	def generateNewCelestialBody(x, y, type)

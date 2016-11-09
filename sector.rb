@@ -20,19 +20,12 @@ class AstroLocation
 	
 	# creates by parsing string
 	# Format: 'a:sec#:x,y'
-	def initialize(db, s)
+	def initialize(s)
 		args = s.split(':')
 		xyargs = args[2].split(',')
-		@sector = Sector.new(db, args[1])
+		@sector = Sector.new($db, args[1])
 		@x = xyargs[0].to_i
 		@y = xyargs[1].to_i
-	end
-	
-	# creates by specifying params
-	def initialize(sector, x, y)
-		@sector = sector
-		@x = x
-		@y = y
 	end
 	
 	# returns sector ref
@@ -51,9 +44,13 @@ class AstroLocation
 	end
 	
 	def to_s
-		'a:' + @sector.id + ':' + x + ',' + y
+		'a:' + @sector.id + ':' + x.to_s + ',' + y.to_s
 	end
 	
+end
+
+def astroLocationFromCoords(sector, x, y)
+	AstroLocation.new('a:' + sector.id + ':' + x.to_s + ',' + y.to_s)
 end
 
 
@@ -66,7 +63,7 @@ class Sector < RedisObject
 	MinSystemDistance = 5 * SolarSystem::SolarSystemRadius
 	MedianNumSolarSystems = 7
 	NumSolarSystemsVariation = 5
-	SolarSystemSpan = 5e15
+	SectorSpan = 5e15
 	
 	
 	# returns the x index of this sector (0 is center)
@@ -94,6 +91,18 @@ class Sector < RedisObject
 		ret
 	end
 	
+	# Returns all solar systems which may cover the given radius
+	def solarsystemsWithin(x, y, rad)
+		ret = []
+		solarsystems.each do |system|
+			dist = Math.sqrt((x - system.centerX)**2 + (y - system.centerY)**2)
+			if dist <= rad + SolarSystem::SolarSystemRadius
+				ret.push system
+			end
+		end
+		ret
+	end
+	
 	# generates a new solar system part of this sector
 	def generateNewSolarSystem(x, y)
 		system = newSolarSystem(@db, self, x, y)
@@ -110,8 +119,8 @@ class Sector < RedisObject
 			# repeat until successful
 			loop do
 				# A sector ranges from -5e15 -> 5e15 on both xy axis
-				xcenter = Random.rand(-SolarSystemSpan...SolarSystemSpan)
-				ycenter = Random.rand(-SolarSystemSpan...SolarSystemSpan)
+				xcenter = Random.rand(-SectorSpan...SectorSpan)
+				ycenter = Random.rand(-SectorSpan...SectorSpan)
 				
 				# make sure it's far enough from every other system
 				othersystems = solarsystems

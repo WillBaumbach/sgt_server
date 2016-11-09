@@ -23,6 +23,9 @@ def resetMap
 end
 
 
+$defaultWorld = nil
+
+
 # Main method called when server daemon begins
 def main
 	#loop do
@@ -30,14 +33,14 @@ def main
 	#	puts 'P: ' + pos[0].to_s + ' : ' + pos[1].to_s
 	#end
 
-	world = newWorld($db, 'main')
+	$defaultWorld = newWorld($db, 'main')
 	
 	EM.run {
 		EM::WebSocket.run(:host => "0.0.0.0", :port => 1111, :secure => false) do |ws|
 			client = nil
 
 			ws.onopen { |handshake|
-				client = Client.new(ws, world)
+				client = Client.new(ws, $defaultWorld, $db)
 			}
 
 			ws.onclose {
