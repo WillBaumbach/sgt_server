@@ -12,6 +12,8 @@ require 'json'
 
 
 class PlayerLocation
+	D = 1000000000
+	
 	def initialize(db, id)
 		@id = id
 		@db = db
@@ -40,7 +42,7 @@ class PlayerLocation
 	def space
 		AstroLocation.new(rawString)
 	end
-	
+
 end
 
 
@@ -53,6 +55,11 @@ class Player < RedisObject
 	def location
 		PlayerLocation.new(@db, @id)
 	end
+	
+	def inventory
+		Inventory.new(@db,@id)
+	end
+	
 	
 	# Player connected to the game -> set up message processing
 	def connected(client)
@@ -88,6 +95,19 @@ class Player < RedisObject
 				end
 			end
 			req.reply('DISTANT', {:cbs => resp}.to_json)
+		elsif req.request == 'RESOURCES'
+			resourceinfo = {}
+			celestialbody = getCelestialBody(@db, req.getmessage())
+			if (celestialbody.solarsystem.sector == location.space.sector)
+				dist = Math.sqrt((location.space.x - celestialbody.x)^2 + (location.space.y - celestialbody.y)^2)
+				if (dist <= D)
+					resourceinfo = celestialbody.inventory.resources.to_json
+				end
+			end
+			req.reply('RESOURCES', resourceinfo)
+		elsif req.request == 'INVENTORY'
+			invinfo = inventory.resources.to_json	
+			req.reply('INVENTORY', invinfo)
 		end
 	end
 	
