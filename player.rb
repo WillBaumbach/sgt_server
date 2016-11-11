@@ -108,6 +108,8 @@ class Player < RedisObject
 		elsif req.request == 'INVENTORY'
 			invinfo = inventory.resources.to_json	
 			req.reply('INVENTORY', invinfo)
+		elsif req.request == 'IMOVED'
+			
 		end
 	end
 	
