@@ -66,6 +66,7 @@ class Player < RedisObject
 		client.listen('WHEREAMI?', self)
 		client.listen('NEARBY?', self)
 		client.listen('DISTANT?', self)
+		client.listen('IMOVED', self)
 	end
 	
 	# For handling client requests
@@ -112,7 +113,12 @@ class Player < RedisObject
 			invinfo = inventory.resources.to_json	
 			req.reply('INVENTORY', invinfo)
 		elsif req.request == 'IMOVED'
-			
+			reqjson = req.json
+			if reqjson.include?('sx') && reqjson.include?('sy') && reqjson.include?('x') && reqjson.include?('y')
+				# TODO: Handle other sectors
+				# TODO: Check validity of move
+				location.setSpace(astroLocationFromCoords(location.space.sector, reqjson['x'].to_i, reqjson['y'].to_i))
+			end
 		end
 	end
 	

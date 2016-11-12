@@ -5,6 +5,7 @@
 #	Client communication request
 
 require 'redis'
+require 'json'
 
 # Container for a request from a client
 class Request
@@ -27,6 +28,14 @@ class Request
 	# Returns the message
 	def message
 		@msg
+	end
+	
+	def json
+		begin
+			return JSON.parse(@msg)
+		rescue
+			return {}
+		end
 	end
 	
 	# returns request type
