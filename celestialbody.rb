@@ -1,4 +1,3 @@
-
 # SpaceGameThing project originally developed for CSE 2102
 # Copyright 2016: Will Baumbach and Jeffrey Santi
 # 
