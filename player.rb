@@ -72,12 +72,15 @@ class Player < RedisObject
 			distOfSight = SolarSystem::SolarSystemRadius if distOfSight > SolarSystem::SolarSystemRadius
 			distOfSight = 1000 if distOfSight < 1000
 			
+			resp = []
 			loc = location.space
 			loc.sector.solarsystemsWithin(loc.x, loc.y, distOfSight).each do |system|
 				system.celestialBodiesWithin(loc.x, loc.y, distOfSight).each do |cb|
-					puts(cb)
+					bodyinfo = {:x => cb.x, :y => cb.y, :type => cb.type}
+					resp.push bodyinfo
 				end
 			end
+			req.reply('NEARBY', {:cbs => resp}.to_json)
 		elsif req.request == 'DISTANT?'
 			loc = location.space
 			resp = []
