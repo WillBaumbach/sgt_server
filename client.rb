@@ -31,6 +31,7 @@ class Client
 	
 	# Called when client disconnects
 	def disconnect()
+		#@db.srem('sgt-online', @id)
 		puts 'Client Disconnected'
 	end
 	
@@ -55,6 +56,8 @@ class Client
 		if msg.length > 1024*64 || msg.length < 4
 			return
 		end
+		
+		puts msg
 		
 		args = msg.split(' ')
 		if args.count < 2
@@ -88,9 +91,14 @@ class Client
 	# For handling authentication
 	def onRequest(req)
 		if req.request == 'AUTH'
-			uid = req.message
-			player = getPlayer(@db, uid)
+			puts 'AUTH!!!! ' + req.message
+			@id = req.message
+			player = getPlayer(@db, @id)
 			player.connected(self)
+			
+			puts '@db.sadd(\'sgt-online\', '+@id+')'
+			@db.sadd('sgt-online', @id)
+			
 		else
 			req.reply('REPLY', 'Message')
 		end
